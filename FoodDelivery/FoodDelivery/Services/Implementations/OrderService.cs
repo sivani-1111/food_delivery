@@ -9,13 +9,56 @@ namespace FoodDelivery.Services.Implementations
 {
     public class OrderService : IOrderService
     {
-        private readonly IOrderRepository _repository; private readonly FoodDeliverySystemContext _context; private readonly IMapper _mapper;
+        private readonly IOrderRepository _orderRepository; private readonly FoodDeliverySystemContext _context; private readonly IMapper _mapper;
 
-        public OrderService(IOrderRepository repository, FoodDeliverySystemContext context, IMapper mapper)
+        public OrderService(IOrderRepository orderRepository, FoodDeliverySystemContext context, IMapper mapper)
         {
-            _repository = repository;
+            _orderRepository = orderRepository;
             _context = context;
             _mapper = mapper;
+        }
+
+        public async Task<OrderDto> AddOrderFromCartAsync(string customerEmail)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customerEmail);
+            if (customer == null) throw new Exception("Invalid Customer");
+
+            var cartItems = await _context.Carts
+                .Include(c => c.Item)
+                .Where(c => c.CustomerId == customer.CustomerId)
+                .ToListAsync();
+
+            if (!cartItems.Any()) throw new Exception("Cart is empty");
+
+            var groupedByRestaurant = cartItems.GroupBy(c => c.Item.RestaurantId);
+            var orders = new List<Order>();
+
+            foreach (var group in groupedByRestaurant)
+            {
+                var totalAmount = group.Sum(ci => ci.Quantity * ci.Item.Price);
+
+                var order = new Order
+                {
+                    CustomerId = customer.CustomerId,
+                    RestaurantId = group.Key,
+                    Status = "Pending",
+                    TotalAmount = totalAmount
+                };
+
+                await _context.Orders.AddAsync(order);
+                orders.Add(order);
+            }
+
+            await _context.SaveChangesAsync();
+
+            _context.Carts.RemoveRange(cartItems);
+            await _context.SaveChangesAsync();
+
+            var firstOrder = orders.First();
+            var orderWithRestaurant = await _context.Orders.Include(o => o.Restaurant)
+                        .FirstOrDefaultAsync(o => o.OrderId == firstOrder.OrderId);
+
+            return _mapper.Map<OrderDto>(orderWithRestaurant);
         }
 
         public async Task<OrderDto?> GetByIdAsync(int orderId, string customerEmail)
@@ -23,72 +66,12 @@ namespace FoodDelivery.Services.Implementations
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customerEmail);
             if (customer == null) return null;
 
-            var order = await _repository.GetByIdAsync(orderId);
+            var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null || order.CustomerId != customer.CustomerId) return null;
 
             return _mapper.Map<OrderDto>(order);
-        }
-
-        public async Task<OrderDto> AddAsync(CreateOrderDto dto, string customerEmail)
-        {
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customerEmail);
-            if (customer == null) throw new Exception("Unauthorized");
-
-            var order = new Order
-            {
-                CustomerId = customer.CustomerId,
-                RestaurantId = dto.RestaurantID,
-                Status = "Pending",
-                TotalAmount = dto.TotalAmount
-            };
-
-            var created = await _repository.AddAsync(order);
-            return _mapper.Map<OrderDto>(created);
         }
     }
 
 }
 
-
-
-//using AutoMapper;
-//using FoodDelivery.DTOs;
-//using FoodDelivery.Models;
-//using FoodDelivery.Repositories.Interfaces;
-//using FoodDelivery.Services.Interfaces;
-
-//namespace FoodDelivery.Services.Implementations
-//{
-//    public class OrderService : IOrderService
-//    {
-//        private readonly IOrderRepository _repository; private readonly IMapper _mapper;
-
-//        public OrderService(IOrderRepository repository, IMapper mapper)
-//        {
-//            _repository = repository;
-//            _mapper = mapper;
-//        }
-
-//        public async Task<OrderDto?> GetByIdAsync(int orderId, int customerId)
-//        {
-//            var order = await _repository.GetByIdAsync(orderId);
-//            if (order == null || order.CustomerId != customerId) return null;
-//            return _mapper.Map<OrderDto>(order);
-//        }
-
-//        public async Task<OrderDto> AddAsync(CreateOrderDto dto)
-//        {
-//            var order = new Order
-//            {
-//                CustomerId = dto.CustomerID,
-//                RestaurantId = dto.RestaurantID,
-//                Status = "Pending",
-//                TotalAmount = dto.TotalAmount
-//            };
-
-//            var created = await _repository.AddAsync(order);
-//            return _mapper.Map<OrderDto>(created);
-//        }
-//    }
-
-//}

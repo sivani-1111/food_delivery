@@ -29,30 +29,3 @@ namespace FoodDelivery.Controllers
 
 }
 
-//using FoodDelivery.DTOs;
-//using Microsoft.AspNetCore.Mvc;
-//using FoodDelivery.Services.Interfaces;
-//using Microsoft.AspNetCore.Authorization;
-
-//namespace FoodDelivery.Controllers
-//{
-//    [Authorize(Roles = "RestaurantOwner")]  
-//    [ApiController]
-//    [Route("api/[controller]")]
-//    public class RestaurantController : ControllerBase
-//    {
-//        private readonly IRestaurantService _service;
-
-//        public RestaurantController(IRestaurantService service)
-//        {
-//            _service = service;
-//        }
-
-//        [HttpPut("{RestaurantId}")]
-//        public async Task<IActionResult> Update(int id, CreateRestaurantDto dto)
-//        {
-//            await _service.UpdateAsync(id, dto);
-//            return NoContent();
-//        }
-//    }
-//}

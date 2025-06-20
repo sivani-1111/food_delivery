@@ -1,10 +1,15 @@
-﻿namespace FoodDelivery.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FoodDelivery.DTOs
 {
     public class CartDto { public int CartID { get; set; } public string ItemName { get; set; } = string.Empty; public decimal Price { get; set; } public int Quantity { get; set; } }
 
     public class CreateCartDto
     {
+        [Required, StringLength(100)]
         public string ItemName { get; set; } = string.Empty;
+
+        [Required, Range(1,100)]
         public int Quantity { get; set; }
     }
 

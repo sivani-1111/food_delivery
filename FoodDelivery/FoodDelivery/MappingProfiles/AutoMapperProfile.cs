@@ -24,8 +24,10 @@ namespace FoodDelivery.MappingProfiles
             CreateMap<UpdateMenuItemDto, MenuItem>();
 
             // Order
-            CreateMap<Order, OrderDto>();
-            CreateMap<CreateOrderDto, Order>();
+            CreateMap<Order, OrderDto>().ForMember(dest => dest.RestaurantName, opt => opt.MapFrom(src => src.Restaurant != null ? src.Restaurant.Name : string.Empty));
+            
+            //CreateMap<Order, OrderDto>();
+            //CreateMap<CreateOrderDto, Order>();
 
             // Delivery
             CreateMap<Delivery, DeliveryDto>()

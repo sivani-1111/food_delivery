@@ -23,13 +23,6 @@ namespace FoodDelivery.Services.Implementations
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customerEmail);
             if (customer == null) throw new Exception("Invalid customer");
 
-            //var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == dto.OrderId);
-            //if (order == null || order.CustomerId != customer.CustomerId)
-            //    throw new Exception("Unauthorized or invalid order");
-
-            //var payment = _mapper.Map<Payment>(dto);
-            //payment.Status = "Successful";
-
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == dto.OrderId);
             if (order == null || order.CustomerId != customer.CustomerId)
                 throw new Exception("Unauthorized or invalid order");

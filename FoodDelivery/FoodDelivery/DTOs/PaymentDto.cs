@@ -1,4 +1,6 @@
-﻿namespace FoodDelivery.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FoodDelivery.DTOs
 {
     public class PaymentDto 
     { 
@@ -11,8 +13,10 @@
     public class CreatePaymentDto
     {
         public int OrderId { get; set; }
+
+        [Required]
         public string PaymentMethod { get; set; } = string.Empty;
-        // public decimal Amount { get; set; }
+       
     }
 
 }

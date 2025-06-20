@@ -6,8 +6,7 @@ namespace FoodDelivery.DTOs
     {
         [Required]
         public string Name { get; set; } = null!;
-        [Required]
-        [DataType(DataType.EmailAddress)]
+        [Required, EmailAddress]
         public string Email { get; set; } = null!;
         [Required]
         public string Phone { get; set; } = null!;
@@ -16,14 +15,13 @@ namespace FoodDelivery.DTOs
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = null!;
-        [Required]
+        [Required,RegularExpression("^(Customer|RestaurantOwner)$")]
         public string Role { get; set; } = null!;
     }
 
     public class LoginDto
     {
-        [Required]
-        [DataType(DataType.EmailAddress)]
+        [Required, EmailAddress]
         public string Email { get; set; } = null!;
         [Required]
         [DataType(DataType.Password)]
